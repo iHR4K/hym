@@ -23,23 +23,24 @@ float3 square(float3 f)
     return float3(f.x * f.x, f.y * f.y, f.z * f.z);
 }
 
-float2 textureCoordFromDirection(float3 dir, int probeIndex, int fullTextureWidth, int fullTextureHeight, int probeSideLength) {
+float2 textureCoordFromDirection(float3 dir, int probeIndex, int fullTextureWidth, int fullTextureHeight, int probeSideLength)
+{
     float2 normalizedOctCoord = octEncode(normalize(dir));
-    float2 normalizedOctCoordZeroOne = (normalizedOctCoord + float2(1.0f,1.0f)) * 0.5f;
+    float2 normalizedOctCoordZeroOne = (normalizedOctCoord + float2(1.0f, 1.0f)) * 0.5f;
 
     // Length of a probe side, plus one pixel on each edge for the border
-    float probeWithBorderSide = (float)probeSideLength + 2.0f;
+    float probeWithBorderSide = (float) probeSideLength + 2.0f;
 
-    float2 octCoordNormalizedToTextureDimensions = (normalizedOctCoordZeroOne * (float)probeSideLength) / float2((float)fullTextureWidth, (float)fullTextureHeight);
+    float2 octCoordNormalizedToTextureDimensions = (normalizedOctCoordZeroOne * (float) probeSideLength) / float2((float) fullTextureWidth, (float) fullTextureHeight);
 
-    int probesPerRow = (fullTextureWidth - 2) / (int)probeWithBorderSide;
+    int probesPerRow = (fullTextureWidth - 2) / (int) probeWithBorderSide;
 
     // Add (2,2) back to texCoord within larger texture. Compensates for 1 pix 
     // border around texture and further 1 pix border around top left probe.
     float2 probeTopLeftPosition = float2((probeIndex % probesPerRow) * probeWithBorderSide,
         ((probeIndex / probesPerRow) * probeWithBorderSide)) + float2(2.0f, 2.0f);
 
-    float2 normalizedProbeTopLeftPosition = float2(probeTopLeftPosition) / float2((float)fullTextureWidth, (float)fullTextureHeight);
+    float2 normalizedProbeTopLeftPosition = float2(probeTopLeftPosition) / float2((float) fullTextureWidth, (float) fullTextureHeight);
 
     return float2(normalizedProbeTopLeftPosition + octCoordNormalizedToTextureDimensions);
 }
@@ -47,7 +48,7 @@ float2 textureCoordFromDirection(float3 dir, int probeIndex, int fullTextureWidt
 
 
 float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreservation, in float3 viewVec)
-{  
+{
     // View vector
     float3 w_o = viewVec;
 
@@ -66,18 +67,19 @@ float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreserva
 
     int3 baseGridCoord_ = baseGridCoord(wsPosition);
     float3 baseProbePos = gridCoordToPosition(baseGridCoord_);
-    float3 sumIrradiance = float3(0,0,0);
+    float3 sumIrradiance = float3(0, 0, 0);
     float sumWeight = 0.0;
 
     // alpha is how far from the floor(currentVertex) position. on [0, 1] for each axis.
-    float3 alpha = clamp((wsPosition - baseProbePos) / L.probeStep, float3(0,0,0), float3(1,1,1));
+    float3 alpha = clamp((wsPosition - baseProbePos) / L.probeStep, float3(0, 0, 0), float3(1, 1, 1));
 
     // Iterate over adjacent probe cage
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 8; ++i)
+    {
         // Compute the offset grid coord and clamp to the probe grid boundary
         // Offset = 0 or 1 along each axis
-        int3  offset = int3(i, i >> 1, i >> 2) & int3(1,1,1);
-        int3  probeGridCoord = clamp(baseGridCoord_ + offset, int3(0,0,0), int3(L.probeCounts - 1));
+        int3 offset = int3(i, i >> 1, i >> 2) & int3(1, 1, 1);
+        int3 probeGridCoord = clamp(baseGridCoord_ + offset, int3(0, 0, 0), int3(L.probeCounts - 1));
         int p = gridCoordToProbeIndex(probeGridCoord);
 
         // Make cosine falloff in tangent plane with respect to the angle from the surface to the probe so that we never
@@ -137,7 +139,7 @@ float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreserva
 
             float distToProbe = length(probeToPoint);
 
-            float2 temp = weightTex.SampleLevel(weightTex_sampler,texCoord,0).rg;
+            float2 temp = weightTex.SampleLevel(weightTex_sampler, texCoord, 0).rg;
             float mean = temp.x;
             float variance = abs(temp.x * temp.x - temp.y);
 
@@ -147,7 +149,7 @@ float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreserva
             float chebyshevWeight = variance / (variance + square(max(distToProbe - mean, 0.0))) + L.chebBias;
                 
             // Increase contrast in the weight 
-            chebyshevWeight = max(pow(chebyshevWeight,3), 0.0);
+            chebyshevWeight = max(pow(chebyshevWeight, 3), 0.0);
 
             weight *= (distToProbe <= mean) ? 1.0 : chebyshevWeight;
         }
@@ -163,14 +165,15 @@ float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreserva
             L.irradianceTextureHeight,
             L.irradianceProbeSideLength);
 
-        float3 probeIrradiance = irradianceTex.SampleLevel(irradianceTex_sampler,texCoord,0).rgb;
+        float3 probeIrradiance = irradianceTex.SampleLevel(irradianceTex_sampler, texCoord, 0).rgb;
 
         // A tiny bit of light is really visible due to log perception, so
         // crush tiny weights but keep the curve continuous. This must be done
         // before the trilinear weights, because those should be preserved.
         const float crushThreshold = 0.2;
-        if (weight < crushThreshold) {
-            weight *= weight * weight * (1.0 / (crushThreshold * crushThreshold)); 
+        if (weight < crushThreshold)
+        {
+            weight *= weight * weight * (1.0 / (crushThreshold * crushThreshold));
         }
 
         // Trilinear weights
@@ -180,9 +183,9 @@ float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreserva
         // This softens the transitions between probes with respect to translation.
         // It makes little difference most of the time, but when there are radical transitions
         // between probes this helps soften the ramp.
-#       if LINEAR_BLENDING == 0
+#if LINEAR_BLENDING == 0
             probeIrradiance = sqrt(probeIrradiance);
-#       endif
+#endif
         
         sumIrradiance += weight * probeIrradiance;
         sumWeight += weight;
@@ -191,9 +194,9 @@ float3 sampleIrradianceField(float3 wsPosition, float3 wsN, float energyPreserva
     float3 netIrradiance = sumIrradiance / sumWeight;
 
     // Go back to linear irradiance
-#   if LINEAR_BLENDING == 0
+#if LINEAR_BLENDING == 0
         netIrradiance = square(netIrradiance);
-#   endif
+#endif
     netIrradiance *= energyPreservation;
 
     return 0.5 * M_PI * netIrradiance;

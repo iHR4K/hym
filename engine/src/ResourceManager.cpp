@@ -29,7 +29,7 @@ void createVertices(aiMesh* p_assMesh, const aiMatrix4x4& trans, std::vector<Hym
 		aiVector3D assNormal = normalMatrix * p_assMesh->mNormals[i];
 		aiVector3D assTangent = trans * p_assMesh->mTangents[i];
 		aiVector3D assBitangent = trans * p_assMesh->mBitangents[i];
-		glm::vec3 normal { assNormal.x, assNormal.y, assNormal.z };
+		glm::vec3 normal{ assNormal.x, assNormal.y, assNormal.z };
 		glm::vec3 tangent{ assTangent.x, assTangent.y, assTangent.z };
 		glm::vec3 bitangent{ assBitangent.x,assBitangent.y,assBitangent.z };
 
@@ -102,22 +102,22 @@ void Hym::ResourceManager::Init()
 	//globalIndexBuffer = StructuredBuffer<u32>("Global Index Buffer", dl::BIND_INDEX_BUFFER | dl::BIND_RAY_TRACING | dl::BIND_SHADER_RESOURCE);
 }
 
-void Hym::ResourceManager::preTransformNode(const aiNode& node, const aiScene& scene, std::vector<Hym::ModelComponent>& models, std::vector<Vertex>& vertices, std::vector<u32>& indices, 
+void Hym::ResourceManager::preTransformNode(const aiNode& node, const aiScene& scene, std::vector<Hym::ModelComponent>& models, std::vector<Vertex>& vertices, std::vector<u32>& indices,
 	std::vector<Material>& materials)
 {
 	for (unsigned int i = 0; i < node.mNumChildren; i++)
 	{
 		aiNode& child = *node.mChildren[i];
 		child.mTransformation = node.mTransformation * child.mTransformation;
-		preTransformNode(child, scene, models,vertices,indices,materials);
+		preTransformNode(child, scene, models, vertices, indices, materials);
 		for (unsigned int j = 0; j < child.mNumMeshes; j++)
 		{
 			auto* mesh = scene.mMeshes[child.mMeshes[j]];
 			u64 globalVerticesAt = globalVertexBuffer.GetSize() + vertices.size();
 			u64 globalIndicesAt = globalIndexBuffer.GetSize() + indices.size();
 			auto mat = createMaterial(scene.mMaterials[mesh->mMaterialIndex], std::string(mesh->mName.C_Str()), materials);
-			createVertices(mesh, child.mTransformation,vertices, mat);
-			createIndices(mesh,indices);
+			createVertices(mesh, child.mTransformation, vertices, mat);
+			createIndices(mesh, indices);
 			//globalVertexBuffer.Add(ArrayRef<Vertex>::MakeRef(vertices));
 			//globalIndexBuffer.Add(ArrayRef<u32>::MakeRef(indices));
 			auto indexSize = (globalIndexBuffer.GetSize() + indices.size()) - globalIndicesAt;
@@ -176,7 +176,7 @@ Hym::Texture Hym::ResourceManager::LoadTexture(const std::string& filename, cons
 	switch (type)
 	{
 	case TextureType::Albedo:
-	{		
+	{
 		out = Texture{ .handle = tex, .offset = albedoTexs.size(), .textureType = type };
 		specificTA = &albedoTexs;
 		break;
@@ -189,7 +189,7 @@ Hym::Texture Hym::ResourceManager::LoadTexture(const std::string& filename, cons
 	}
 	case TextureType::MetalRough:
 	{
-		out = Texture{ .handle = tex, .offset = metalRoughnessTexs.size(), .textureType = type };		
+		out = Texture{ .handle = tex, .offset = metalRoughnessTexs.size(), .textureType = type };
 		specificTA = &metalRoughnessTexs;
 		break;
 	}
@@ -242,19 +242,20 @@ Hym::u32 Hym::ResourceManager::createMaterial(aiMaterial* ai_mat, const std::str
 	//auto specular = load_texture_assimp(ai_mat, aiTextureType_UNKNOWN, "specular", glm::vec4(255, 255, 0, 1));
 	//auto normal = load_texture_assimp(ai_mat, aiTextureType_NORMALS, "normal", glm::vec4(128, 128, 255, 255));
 	//return { .albedo = albedoTexs.textures.size() -1 };// , normal, specular, emissive
-	auto addMat = [&](u32& offset, aiTextureType type, const char* name, TextureType ttype) {
-		auto tex = loadTextureAssimp(ai_mat, meshName, type, name,currSceneFileDir.string(), ttype, *this);
-		if (tex.handle)
+	auto addMat = [&](u32& offset, aiTextureType type, const char* name, TextureType ttype)
 		{
-			offset = tex.offset;
-			return true;
-		}
-		else
-		{
-			offset = GetMaxIdx();
-			return false;
-		}
-	};
+			auto tex = loadTextureAssimp(ai_mat, meshName, type, name, currSceneFileDir.string(), ttype, *this);
+			if (tex.handle)
+			{
+				offset = tex.offset;
+				return true;
+			}
+			else
+			{
+				offset = GetMaxIdx();
+				return false;
+			}
+		};
 	Material mat;
 	bool hasAtLeastOneTex = addMat(mat.albedo, aiTextureType_DIFFUSE, "albedo", TextureType::Albedo);
 	if (hasAtLeastOneTex)
@@ -278,7 +279,7 @@ bool Hym::ResourceManager::upload(const std::vector<Vertex>& vertices, const std
 		globalVertexBuffer = StructuredBuffer<Vertex>("Global Vertex Buffer", vref, dl::BIND_VERTEX_BUFFER | dl::BIND_RAY_TRACING | dl::BIND_SHADER_RESOURCE);
 		globalIndexBuffer = StructuredBuffer<u32>("Global Index Buffer", iref,
 			dl::BIND_INDEX_BUFFER | dl::BIND_RAY_TRACING | dl::BIND_SHADER_RESOURCE);
-		if(!materials.empty())
+		if (!materials.empty())
 			globalMaterialBuffer = StructuredBuffer<Material>("Global Material Indices", matref, dl::BIND_SHADER_RESOURCE);
 	}
 
@@ -286,7 +287,7 @@ bool Hym::ResourceManager::upload(const std::vector<Vertex>& vertices, const std
 	{
 		rebuild = globalVertexBuffer.Add(vref);
 		rebuild = globalIndexBuffer.Add(iref) || rebuild;
-		if(!materials.empty())
+		if (!materials.empty())
 			rebuild = globalMaterialBuffer.Add(matref) || rebuild;
 	}
 
@@ -410,7 +411,7 @@ void Hym::ResourceManager::LoadSceneFile(const std::string& sceneFile, const std
 		std::vector<u32> indices;
 		std::vector<Material> materials;
 		std::vector<ObjectAttrs> attrs;
-		preTransformNode(*scene->mRootNode, *scene, models,vertices,indices,materials);
+		preTransformNode(*scene->mRootNode, *scene, models, vertices, indices, materials);
 		upload(vertices, indices, materials);
 		createBLAS(models);
 		aliasMap[sceneAlias] = std::move(models);

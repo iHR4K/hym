@@ -14,7 +14,7 @@ ConstantBuffer<Sun> sun;
 
 
 
-[numthreads(8,8,1)]
+[numthreads(8, 8, 1)]
 void main(uint3 groupId : SV_GroupID,
         uint3 threadInGroup : SV_GroupThreadID)
 {
@@ -24,33 +24,37 @@ void main(uint3 groupId : SV_GroupID,
     );
 
     uint2 dim;
-    rayDirections.GetDimensions(dim.x,dim.y);
-    if(texelPos.x >= dim.x || texelPos.y >= dim.y) return;
+    rayDirections.GetDimensions(dim.x, dim.y);
+    if (texelPos.x >= dim.x || texelPos.y >= dim.y)
+        return;
 
     
-    Ray r = generateRay(texelPos,(float3x3)randomOrientation.mat,L.raysPerProbe,L.minRayDst);
+    Ray r = generateRay(texelPos, (float3x3) randomOrientation.mat, L.raysPerProbe, L.minRayDst);
     HitInfo info;
-    bool hit = traceRay(r,info,tlas);
-    float3 allLight = float3(0,0,0);
+    bool hit = traceRay(r, info, tlas);
+    float3 allLight = float3(0, 0, 0);
     int lit = 0;
-    if(hit)
+    if (hit)
     {
-        float3 viewVec = normalize(r.origin.xyz-info.wsHitpoint);
-        float3 indirectL = sampleIrradianceField(info.wsHitpoint,info.wsN,L.energyConservation,viewVec);
+        float3 viewVec = normalize(r.origin.xyz - info.wsHitpoint);
+        float3 indirectL = sampleIrradianceField(info.wsHitpoint, info.wsN, L.energyConservation, viewVec);
+        
+        //indirectL /= 100000000000;
         Ray shadowRay;
         shadowRay.direction = -sun.direction;
-        shadowRay.origin = float4(info.wsHitpoint,0.00 );
-        bool sHit = traceRaySimple(shadowRay,tlas);
-        lit = !sHit;//sHit ? 0 : 1;
-        float3 directL = max(dot(-sun.direction,info.wsN),0.0) * sun.color * lit;
+        shadowRay.origin = float4(info.wsHitpoint, 0.0);
+        bool sHit = traceRaySimple(shadowRay, tlas);
+        lit = !sHit; //sHit ? 0 : 1;
+        float3 directL = max(dot(-sun.direction, info.wsN), 0.0) * sun.color * lit;
         allLight = (directL + indirectL) * info.color;
+
     }
     //float tw = L.depthProbeSideLength;
-    float d = max(dot(-sun.direction,info.wsN),0);
-    rayDirections[texelPos] = float4(r.direction,0);
-    rayHitLocations[texelPos] = hit?float4(info.wsHitpoint,0):float4(0,0,0,0);
-    rayHitRadiance[texelPos] = float4(allLight,0);
-    rayHitNormals[texelPos] = hit?float4(info.wsN,0):float4(0,0,0,0);
+    float d = max(dot(-sun.direction, info.wsN), 0);
+    rayDirections[texelPos] = float4(r.direction, 0);
+    rayHitLocations[texelPos] = hit ? float4(info.wsHitpoint, 0) : float4(0, 0, 0, 0);
+    rayHitRadiance[texelPos] = float4(allLight, 0);
+    rayHitNormals[texelPos] = hit ? float4(info.wsN, 0) : float4(0, 0, 0, 0);
     rayOrigins[texelPos] = r.origin;
 }
 

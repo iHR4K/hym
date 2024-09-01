@@ -10,10 +10,10 @@ namespace Hym
 {
 	struct Mesh
 	{
-		u32 numIndices=0;
-		u32 numVertices=0;
-		u64 offsetIndex=0;
-		u64 offsetVertex=0;
+		u32 numIndices = 0;
+		u32 numVertices = 0;
+		u64 offsetIndex = 0;
+		u64 offsetVertex = 0;
 		u64 idxIntoLinearBuffer = 0;
 		//std::string name="Invalid";
 	};
@@ -26,9 +26,10 @@ namespace Hym
 		u32 emissive;
 	};
 
-	struct ModelComponent{
+	struct ModelComponent
+	{
 		u32 matIdx;
-		Mesh mesh;	
+		Mesh mesh;
 	};
 
 	struct DataComponent
@@ -58,7 +59,9 @@ namespace Hym
 		TransformComponent(const glm::vec3& scale,
 			const glm::vec3& rotation,
 			const glm::vec3& translation)
-			:scale(scale), rotation(rotation), translation(translation) {}
+			:scale(scale), rotation(rotation), translation(translation)
+		{
+		}
 	};
 
 }

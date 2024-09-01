@@ -15,7 +15,7 @@ namespace Hym
 	{
 	public:
 		Scene(ResourceManager& manager)
-			:resourceManager(manager), dynamicObjs(reg, entt::collector.update<TransformComponent>()), sun({90,-96}, { 1,1,1 })
+			:resourceManager(manager), dynamicObjs(reg, entt::collector.update<TransformComponent>()), sun({ 90,-180 }, { 1,1,1 })
 		{
 			instanceAttrs = StructuredBuffer<ObjectAttrs>("Instance Attr Buffer", dl::BIND_SHADER_RESOURCE);
 		}
@@ -28,7 +28,7 @@ namespace Hym
 		void Deserialize(const std::string& filename);
 		void UpdateDynamicObjs();
 		StructuredBuffer<ObjectAttrs>& GetInstanceObjAttrsBuffer() { return instanceAttrs; }
-		std::pair<glm::vec3,glm::vec3> GetMinMax() const;
+		std::pair<glm::vec3, glm::vec3> GetMinMax() const;
 		ResourceManager& GetResourceManager() { return resourceManager; }
 		entt::registry& GetRegistry() { return reg; }
 		Sun& GetSun() { return sun; }
@@ -58,7 +58,7 @@ namespace Hym
 		entt::observer dynamicObjs;
 		Sun sun;
 		bool addingStacicScene = true;
-		
+
 		RefCntAutoPtr<dl::ITopLevelAS> tlas;
 		RefCntAutoPtr<dl::IBuffer> tlasScratchBuffer;
 		RefCntAutoPtr<dl::IBuffer> tlasInstanceBuffer;

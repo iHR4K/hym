@@ -85,7 +85,7 @@ namespace Hym
 		};
 
 		float indirectIntensity = 1;
-		float directIntensity = 1;
+		float directIntensity = 0;
 
 		Pipeline geometryPass;
 		RefCntAutoPtr<IShaderResourceBinding> geomSRB;

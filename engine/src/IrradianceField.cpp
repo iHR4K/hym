@@ -18,8 +18,8 @@ void Hym::IrradianceField::Init(int probesX, int probesY, int probesZ, int raysP
 	L.probeCounts.x = probesX;
 	L.probeCounts.y = probesY;
 	L.probeCounts.z = probesZ;
-	L.depthProbeSideLength = 16;
-	L.irradianceProbeSideLength = 16;
+	L.depthProbeSideLength = 128;
+	L.irradianceProbeSideLength = 128;
 	L.normalBias = 0.25f;
 	L.minRayDst = 0.08f;
 	L.irradianceTextureWidth = (L.irradianceProbeSideLength + 2) /* 1px Border around probe left and right */ * L.probeCounts.x * L.probeCounts.y + 2 /* 1px Border around whole texture left and right*/;
@@ -63,11 +63,11 @@ void Hym::IrradianceField::Init(int probesX, int probesY, int probesZ, int raysP
 	createSurfelBuffer(rayHitNormals, "rayHitNormals");
 	createSurfelBuffer(rayHitRadiance, "rayHitRadiance");
 
-	
+
 	lightFieldBuffer = UniformBuffer<LightField>("Lightfield Buffer", USAGE_DEFAULT, L);
 	updateValuesBuffer = UniformBuffer<UpdateValues>("Update Values Buffer", USAGE_DEFAULT, updateValues);
 	randomOrientationBuffer = UniformBuffer<RandomOrientation>("Random Orientation Buffer");
-	
+
 	auto depthSL = std::to_string(L.depthProbeSideLength);
 	auto irrSL = std::to_string(L.irradianceProbeSideLength);
 
@@ -78,7 +78,7 @@ void Hym::IrradianceField::Init(int probesX, int probesY, int probesZ, int raysP
 	rd = std::mt19937_64(dev());
 	distr = std::uniform_real_distribution<double>(0., glm::pi<double>() * 2);
 	distrAxis = std::uniform_real_distribution<double>(0., 1.0);
-	
+
 	createComputeRaysPSO(scene);
 
 	createPSOBorderOp(copyBorder_IrradiancePass, irradianceTex, "Copy Border Irradiance PSO", SHADER_RES "/borderOperations_cs.hlsl", irrSL.c_str(), "mainDuplicateProbeEdges");
@@ -187,7 +187,8 @@ void Hym::IrradianceField::Draw()
 
 	DispatchComputeAttribs dattrs;
 	dattrs.ThreadGroupCountZ = 1;
-	if(!writeToOnesDone)
+	writeToOnesDone = true;
+	if (!writeToOnesDone)
 	{
 
 		dattrs.ThreadGroupCountX = tgcXIrr;
@@ -214,7 +215,7 @@ void Hym::IrradianceField::Draw()
 
 	{
 		auto map = randomOrientationBuffer.Map();
-		auto theta = acos(2*distrAxis(rd)-1);
+		auto theta = acos(2 * distrAxis(rd) - 1);
 		auto phi = 2 * glm::pi<double>() * distrAxis(rd);
 		auto axis = Sun::ToCartesian(glm::vec2(theta, phi));
 		float angle = distr(rd);
@@ -225,7 +226,7 @@ void Hym::IrradianceField::Draw()
 
 	dattrs.ThreadGroupCountX = tgcXWei;
 	dattrs.ThreadGroupCountY = tgcYWei;
-	
+
 	Imm->SetPipelineState(updateWeightProbesPass.GetPSO());
 	Imm->CommitShaderResources(updateWeightProbesPass.GetSRB(), RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	Imm->DispatchCompute(dattrs);
