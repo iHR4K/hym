@@ -16,7 +16,8 @@ namespace Hym
 		{
 			res.Init();
 
-			res.LoadSceneFile(RES "/scenes/irrad_volumes/model.gltf", "Sponza");
+			//res.LoadSceneFile(RES "/scenes/irrad_volumes/model.gltf", "Sponza");
+			res.LoadSceneFile(RES "/scenes/dragon/model.gltf", "Sponza");
 
 			std::vector<std::pair<Concept, std::string>> concepts;
 			for (auto& m : *res.GetSceneModels("Sponza"))
@@ -30,8 +31,11 @@ namespace Hym
 			scene.AddConcepts(ref);
 
 			cam.SetPerspectiveProj(87.f, init.width / (float)init.height, 0.1f, 1000.f);
-			cam.SetEyePos({ 1,3,0 });
-			cam.LookAt({ 1,1,1 });
+
+			cam.SetEyePos({ 0,0,3 });
+			cam.LookAt({ 0,0,0 });
+
+			//cam.LookAt({ 1,1,1 });
 			renderer.Init(scene, probesXYZ[0], probesXYZ[1], probesXYZ[2], raysPerProbe);
 		}
 

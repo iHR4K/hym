@@ -145,7 +145,7 @@ void Hym::Renderer::debugDrawProbes(Scene& scene, Camera& cam)
 	auto view = cam.GetViewMatrix();
 
 	auto& L = irrField.GetLightField();
-	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.15, 0.15, 0.15));
+	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5, 0.5, 0.5));
 	//int id = 0;
 
 	for (int i = 0; i < L.probeCounts.x * L.probeCounts.y; i++)
@@ -218,6 +218,7 @@ void Hym::Renderer::initDebugDrawProbes(Hym::Scene& scene)
 	srb->GetVariableByName(SHADER_TYPE_PIXEL, "uniforms")->Set(debugProbeData.uniforms.GetBuffer());
 	srb->GetVariableByName(SHADER_TYPE_PIXEL, "irradianceTex")->Set(irrField.GetIrrTexView());
 	auto& model = scene.GetResourceManager().GetSceneModels("uvsphere")->at(0);
+
 	debugProbeData.mesh = model.mesh;
 }
 

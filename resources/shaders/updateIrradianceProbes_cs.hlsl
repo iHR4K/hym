@@ -123,7 +123,7 @@ void main(uint3 groupId : SV_GroupID,
         //result.w = 1.0f - uniforms.hysteresis;
     } // if nonzero
 
-    float4 old = tex.Load(texelPos);
+    float4 old = tex.Load(int3(texelPos, 0));
     tex[texelPos] = lerp(old, result, 1.0f - uniforms.hysteresis);
     
     /*
