@@ -15,7 +15,7 @@ namespace Hym
 	{
 	public:
 		Scene(ResourceManager& manager)
-			:resourceManager(manager), dynamicObjs(reg, entt::collector.update<TransformComponent>()), sun({ 90,-180 }, { 1,1,1 })
+			:resourceManager(manager), dynamicObjs(reg, entt::collector.update<TransformComponent>()), sun({ -95, 180 }, { 1,1,1 })
 		{
 			instanceAttrs = StructuredBuffer<ObjectAttrs>("Instance Attr Buffer", dl::BIND_SHADER_RESOURCE);
 		}
