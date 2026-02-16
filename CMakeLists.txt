@@ -27,9 +27,7 @@ PRIVATE
 copy_required_dlls(${target})
 endmacro()
 
-
 project(Hym)
-
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT HymTest)
 file(GLOB_RECURSE SRC engine/src/*.cpp)
